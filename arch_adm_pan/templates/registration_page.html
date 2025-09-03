@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Регистрация</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3d3d3d;
+      --secondary: #2c2c2c;
+      --background: #fcfcfc;
+      --accent: #ffffff;
+      --success: #93da86;
+      --danger: #f07167;
+      --text: #333;
+      --white: #ffffff;
+      --muted: #777;
+      --border: #dcdcdc;
+      --focus: #4c8bf5;
+      --shadow: 0 2px 10px rgba(0,0,0,.08);
+      --dropdown-shadow: 0 8px 20px rgba(0,0,0,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+
+    body {
+      background-color: var(--background);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; color: var(--text); padding: 20px;
+    }
+
+    .form-container {
+      background: var(--accent);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      width: 100%; max-width: 420px;
+    }
+
+    .form-container h2 {
+      margin-bottom: 20px; font-size: 24px; text-align: center;
+      color: var(--primary); text-transform: uppercase;
+    }
+
+    form { display: flex; flex-direction: column; gap: 16px; }
+
+    label { font-size: 14px; display: block; margin-bottom: 6px; }
+
+    input {
+      padding: 10px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px; background: var(--white); width: 100%;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus {
+      outline: none; border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(76,139,245,.2);
+    }
+
+    /* ==== кастомный мультиселект ==== */
+    .multiselect {
+      position: relative;
+    }
+    .multiselect-toggle {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      min-height: 44px; width: 100%;
+      padding: 8px 40px 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--white);
+      cursor: pointer;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .multiselect-toggle:focus {
+      outline: none; border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(76,139,245,.2);
+    }
+
+    .multiselect-toggle:hover {
+      background-color: var(--white);
+    }
+    .multiselect-placeholder { color: var(--muted); }
+    .multiselect-arrow {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 12px; color: var(--text); pointer-events: none;
+    }
+    .multiselect.open .multiselect-arrow { transform: translateY(-50%) rotate(180deg); }
+
+    .badge {
+      display: inline-block; padding: 3px 8px; border-radius: 999px;
+      background: var(--secondary); border: 1px solid #e2e7ff; font-size: 12px;
+    }
+
+    .multiselect-dropdown {
+      display: none;
+      position: absolute; left: 0; right: 0; z-index: 20;
+      margin-top: 8px; padding: 6px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: var(--dropdown-shadow);
+      max-height: 240px; overflow: auto;
+    }
+    .multiselect.open .multiselect-dropdown { display: block; }
+
+    .option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px; border-radius: 8px; cursor: pointer;
+    }
+    .option:hover { background: #f6f7f9; }
+    .option input { width: 16px; height: 16px; }
+
+    .help {
+      font-size: 12px; color: var(--muted); margin-top: 4px;
+    }
+
+    /* .invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(240,113,103,.15) !important; } */
+
+    .login-redirect { display: flex; align-items: center; gap: 10px; margin-top: 0; }
+    .button-link {
+      display: inline-block; padding: 8px 0; background: none; color: var(--text);
+      border-radius: 8px; text-decoration: underline; font-weight: 500; font-size: 16px;
+      transition: color .2s ease;
+    }
+    .button-link:hover { color: var(--danger); }
+
+    button {
+      padding: 12px; background: var(--primary); color: var(--white);
+      border: none; border-radius: 10px; cursor: pointer; font-size: 16px;
+      transition: background .25s ease;
+    }
+    button:hover { background: var(--secondary); }
+
+    @media (max-width: 480px) {
+      .form-container { padding: 20px; }
+      .form-container h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Регистрация</h2>
+
+    <form method="post" action="/auth/register/submit" id="register-form" novalidate>
+      <div>
+        <label for="first_name">Имя</label>
+        <input type="text" id="first_name" name="first_name" required placeholder="Линус">
+      </div>
+
+      <div>
+        <label for="last_name">Фамилия</label>
+        <input type="text" id="last_name" name="last_name" required placeholder="Торвальдс">
+      </div>
+
+      <div>
+        <label for="middle_name">Отчество</label>
+        <input type="text" id="middle_name" name="middle_name" required placeholder="Линуксович">
+      </div>
+
+      <!-- кастомный мультиселект -->
+      <div>
+        <label for="groups-toggle">Группа (можно несколько)</label>
+
+        <div class="multiselect" id="groups-ms">
+          <!-- Кнопка/поле отображения выбранных значений -->
+          <button type="button"
+                  id="groups-toggle"
+                  class="multiselect-toggle"
+                  aria-haspopup="listbox"
+                  aria-expanded="false">
+            <span class="multiselect-placeholder">Выберите группу</span>
+            <span class="multiselect-arrow">▼</span>
+          </button>
+
+          <!-- Выпадающий список с чекбоксами -->
+          <div class="multiselect-dropdown" role="listbox" aria-multiselectable="true">
+            <label class="option">
+              <input type="checkbox" name="groups[]" value="students" required>
+              <span>Студент</span>
+            </label>
+            <label class="option">
+              <input type="checkbox" name="groups[]" value="teachers">
+              <span>Учитель</span>
+            </label>
+            <label class="option">
+              <input type="checkbox" name="groups[]" value="labs">
+              <span>Лаборант</span>
+            </label>
+            <label class="option">
+              <input type="checkbox" name="groups[]" value="admins">
+              <span>Админ</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="help">Кликните по полю, чтобы раскрыть список. Можно выбрать несколько.</div>
+      </div>
+
+      <div>
+        <label for="telephonenumber">Телефон</label>
+        <input type="tel" id="telephonenumber" name="telephonenumber" required placeholder="+7 900 000 00 00">
+      </div>
+
+      <div>
+        <label for="email">Почта</label>
+        <input type="email" id="email" name="email" required placeholder="example@mail.ru">
+      </div>
+
+      <div>
+        <label for="userpassword">Пароль</label>
+        <input type="password" id="userpassword" name="userpassword" required placeholder="Ваш пароль">
+      </div>
+
+      <button type="submit">Зарегистрироваться</button>
+
+      <div class="login-redirect">
+        <p>Уже есть аккаунт?</p>
+        <a href="/auth/login" class="button-link">Войти</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      const ms = document.getElementById('groups-ms');
+      const toggle = document.getElementById('groups-toggle');
+      const dropdown = ms.querySelector('.multiselect-dropdown');
+      const checkboxes = dropdown.querySelectorAll('input[type="checkbox"][name="groups[]"]');
+      const placeholder = ms.querySelector('.multiselect-placeholder');
+      const form = document.getElementById('register-form');
+
+      function updateDisplay() {
+        const selected = Array.from(checkboxes).filter(cb => cb.checked);
+        // очистить “бейджи”
+        toggle.querySelectorAll('.badge').forEach(b => b.remove());
+
+        if (selected.length === 0) {
+          placeholder.style.display = 'inline';
+          toggle.setAttribute('aria-label', 'Выберите группу');
+          toggle.classList.add('invalid');
+        } else {
+          placeholder.style.display = 'none';
+          toggle.classList.remove('invalid');
+          const labels = selected.map(cb => cb.parentElement.textContent.trim());
+          // отрисовать до 3 бейджей, остальное сворачиваем счётчиком
+          labels.slice(0, 3).forEach(txt => {
+            const b = document.createElement('span');
+            b.className = 'badge';
+            b.textContent = txt;
+            toggle.insertBefore(b, toggle.querySelector('.multiselect-arrow'));
+          });
+          if (labels.length > 3) {
+            const more = document.createElement('span');
+            more.className = 'badge';
+            more.textContent = `+${labels.length - 3}`;
+            toggle.insertBefore(more, toggle.querySelector('.multiselect-arrow'));
+          }
+          toggle.setAttribute('aria-label', `Выбрано: ${labels.join(', ')}`);
+        }
+      }
+
+      function openClose(force) {
+        const open = ms.classList.contains('open');
+        const next = (typeof force === 'boolean') ? force : !open;
+        ms.classList.toggle('open', next);
+        toggle.setAttribute('aria-expanded', String(next));
+        if (next) dropdown.focus();
+      }
+
+      // стартовое состояние
+      updateDisplay();
+
+      // клики
+      toggle.addEventListener('click', () => openClose());
+      document.addEventListener('click', (e) => {
+        if (!ms.contains(e.target)) openClose(false);
+      });
+
+      // клавиатура: Esc закрыть
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') openClose(false);
+      });
+
+      // при изменении чекбоксов — обновляем
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateDisplay);
+        // клик по всей строке
+        cb.parentElement.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'INPUT') cb.checked = !cb.checked;
+          updateDisplay();
+        });
+      });
+
+      // валидация: если ничего не выбрано — подсветим
+      form.addEventListener('submit', (e) => {
+        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+        if (!anyChecked) {
+          e.preventDefault();
+          toggle.classList.add('invalid');
+          openClose(true);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

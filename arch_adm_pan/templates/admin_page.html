@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Панель управления пользователями</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3d3d3d;
+      --secondary: #3d3d3d;
+      --background: #fcfcfc;
+      --accent: #ffffff;
+      --success: #93da86;
+      --danger: #f07167;
+      --text: #333;
+      --white: #ffffff;
+    }
+    html, body { width: 100%; height: 100%; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+    body { display: flex; min-height: 100vh; background: var(--background); color: var(--text); }
+    ::selection { background: var(--primary); color: #ffffff; }
+    button, .sidebar { user-select: none; }
+    .icons { width: 20px; height: 20px; }
+    .sidebar {
+      width: 60px; background: var(--primary);
+      border-top-right-radius: 12px; border-bottom-right-radius: 12px;
+      padding: 10px; position: relative; font-size: 15px;
+      transition: transform 0.3s ease, width 0.3s ease;
+    }
+    .sidebar::before {
+      content: ''; position: absolute; left: -30px; top: 0; width: 31px; height: 100%;
+      background: var(--primary); transition: opacity 0.3s ease; opacity: 1;
+    }
+    .sidebar:hover { transform: translateX(10px); }
+    .sidebar:hover::before { opacity: 1; }
+    .sidebar--expanded { width: 200px; transition: transform 0.3s ease, width 0.3s ease; }
+    .sidebar__toggle { background: none; border: none; color: var(--white); cursor: pointer; margin-bottom: 20px; transition: transform 0.3s ease; }
+    .sidebar__menu { display: flex; flex-direction: column; gap: 0px; margin-top: 20px; }
+    .sidebar__item {
+      color: var(--white); display: none; border-bottom: 0.1px solid #ffffff20;
+      padding: 10px; width: 100%; transition: transform 0.3s ease;
+    }
+    .sidebar__item:hover { transform: scale(1.03); transition: transform 0.3s ease; }
+    .sidebar--expanded .sidebar__item { display: block; }
+    .sidebar--expanded .sidebar__toggle { transform: rotate(90deg); transition: transform 0.3s ease; }
+    .main { flex: 1; padding: 20px; position: relative; }
+    .profile { position: absolute; top: 20px; right: 20px; }
+    .profile__button {
+      width: 40px; height: 40px; background: var(--primary);
+      border: none; border-radius: 50%; color: var(--white); cursor: pointer; transition: transform 0.3s ease;
+    }
+    .profile__button:hover { transform: scale(1.1); transition: transform 0.3s ease; }
+    .profile__menu {
+      position: absolute; top: 50px; right: 0; background: var(--white);
+      border: 1px solid var(--accent); border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); min-width: 150px; padding: 10px;
+      display: none; z-index: 10;
+    }
+    .profile__menu--visible { display: block; }
+    .profile__username { font-size: 14px; margin-bottom: 10px; }
+    .profile__logout {
+      background: var(--danger); color: var(--white); border: none; padding: 5px 10px;
+      width: 100%; border-radius: 4px; cursor: pointer;
+    }
+    .search-filter { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+    .search-filter input[type="text"] {
+      width: 250px; padding: 10px 15px; border: 1px solid var(--white);
+      border-radius: 25px; font-size: 14px; outline: none; background: var(--white);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .search-filter button {
+      padding: 10px 20px; border: none; background: var(--secondary); color: var(--white);
+      border-radius: 25px; cursor: pointer; font-size: 14px; transition: background 0.3s ease;
+    }
+    .search-filter button:hover { background: var(--primary); }
+    .user-table {
+      width: 100%; border-collapse: collapse; background: var(--white);
+      border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); font-size: 11px;
+    }
+    .user-table th, .user-table td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    .user-table__actions button {
+      margin-right: 5px; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;
+    }
+    .btn-delete { background: var(--danger); color: var(--white); }
+    .btn-activate { background: var(--success); color: var(--white); }
+    .btn-block { background: var(--danger); color: var(--white); }
+    @media (max-width: 768px) {
+      * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
+      button, a { -webkit-tap-highlight-color: transparent; outline: none; }
+      button:focus, a:focus { outline: none; }
+      .user-table th:not(:first-child):not(:last-child),
+      .user-table td:not(:first-child):not(:last-child) { display: none; }
+      .user-table { font-size: 12px; margin: 0px; }
+      .user-table__actions button { font-size: 12px; }
+      .search-filter { flex-direction: column; align-items: flex-start; }
+      .profile__username { font-size: 14px; margin-bottom: 0px; width: 190px; height: 30px; }
+      .profile__menu { padding: 30px; }
+      .profile__logout { padding: 5px 10px; width: 100%; border-radius: 4px; cursor: pointer; font-size: 12px; }
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%; height: 40px; border-top-left-radius: 22px; border-top-right-radius: 22px;
+        border-bottom-right-radius: 0px; flex-direction: row; justify-content: flex-end; align-items: center;
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; padding: 0 0px; background: var(--primary);
+      }
+      .icons { width: 23px; height: 23px; }
+      .sidebar .icons { margin-right: 10px; }
+      .profile__button { width: 40px; height: 40px; }
+      .sidebar__toggle { margin: 0; position: absolute; bottom: 5px; right: 10px; z-index: 40; transition: transform 0.3s ease; }
+      .sidebar__menu {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 100%; background: var(--primary);
+        flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 60px; gap: 20px; z-index: 30;
+        transform: translateY(100%); transition: transform 0.3s ease; margin-top: 0px;
+      }
+      .sidebar--expanded .sidebar__menu { display: flex; transform: translateY(0); top: 0; }
+      .sidebar--expanded .sidebar__toggle { transform: rotate(90deg); transition: transform 0.3s ease; }
+      .sidebar__item { display: block; color: var(--white); font-size: 16px; border-bottom: 0.1px solid #ffffff20; padding: 0px 5px 20px 20px; width: 100%; }
+      .sidebar:hover { transform: none; }
+      .sidebar:hover::before { opacity: 1; }
+      .main { padding: 10px; margin-bottom: 60px; }
+      .profile { position: fixed; top: 10px; right: 10px; z-index: 10; }
+      .search-filter input[type="text"] { font-size: 13px; }
+      .search-filter button { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar__toggle" id="sidebarToggle"><img src="/static/sidebar.png" class="icons" alt=""></button>
+    <div class="sidebar__menu">
+      <div class="sidebar__item">Главная</div>
+      <div class="sidebar__item">Настройки</div>
+      <div class="sidebar__item">Пользователи</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="profile">
+      <button class="profile__button" id="profileBtn"><img src="/static/user.png" class="icons" alt=""></button>
+      <div class="profile__menu" id="profileMenu">
+        <div class="profile__username">Вошли как: <strong>{{ current_username | e }}</strong></div>
+        <form method="post" action="/auth/logout">
+          <button class="profile__logout" type="submit">Выйти</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="search-filter">
+      <form method="get" action="/admin/users" id="searchForm">
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="Поиск пользователей..." />
+        <button type="submit">Фильтр</button>
+      </form>
+    </div>
+
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>Логин</th>
+          <th>Фамилия</th>
+          <th>Имя</th>
+          <th>Отчество</th>
+          <th>Телефон</th>
+          <th>Почта</th>
+          <th>Группа</th>
+          <th>Дата регистрации</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {# Перебор пользователей #}
+        {% if users and users|length > 0 %}
+          {% for u in users %}
+            <tr data-uid="{{ u.uid | e }}">
+              <td>{{ u.uid | e }}</td> <!-- uid -->
+              <td>{{ last_name | default('—') | e }}</td> <!-- last_name -->
+              <td>{{ first_name | default('—') | e }}</td> <!-- first_name -->
+              <td>{{ middle_name | default('—') | e }}</td> <!-- middle_name -->
+              <td>{{ u.telephonenumber | default('—') | e }}</td> <!-- telephonenumber -->
+              <td>{{ u.mail | e }}
+              </td> <!-- mail -->
+              <td>
+                {% if u.memberOf %}
+                  {{ u.memberOf | map('e') | join(', ') | safe }}
+                {% else %}
+                  —
+                {% endif %}
+              </td> <!-- memberOf (список) -->
+              <td>{{ u.createTimestamp }}
+              </td> <!-- createTimestamp -->
+              <td class="user-table__actions">
+                <!-- Удаление -->
+                <button class="btn-delete" data-action="delete" type="button">Удалить</button>
+                <!-- Блок / Активировать -->
+                {% set is_locked = (u.nsaccountlock is true) %}
+                <button
+                  class="{{ 'btn-activate' if is_locked else 'btn-block' }}"
+                  data-action="toggle-lock"
+                  data-locked="{{ 'true' if is_locked else 'false' }}"
+                  type="button">
+                  {{ 'Активировать' if is_locked else 'Заблокировать' }}
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="9">Пользователей не найдено</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    // sidebar toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('sidebar--expanded'); });
+
+    // profile dropdown
+    const profileBtn = document.getElementById('profileBtn');
+    const profileMenu = document.getElementById('profileMenu');
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('profile__menu--visible');
+    });
+    document.addEventListener('click', (e) => {
+      if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+        profileMenu.classList.remove('profile__menu--visible');
+      }
+    });
+
+    // actions: delete & toggle lock
+    async function requestJSON(url, options = {}) {
+      const resp = await fetch(url, Object.assign({
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
+      }, options));
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.status === 204 ? null : await resp.json().catch(() => null);
+    }
+
+    function updateLockButton(btn, locked) {
+      btn.dataset.locked = String(locked);
+      btn.textContent = locked ? 'Активировать' : 'Заблокировать';
+      btn.classList.toggle('btn-activate', locked);
+      btn.classList.toggle('btn-block', !locked);
+    }
+
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+
+      const row = btn.closest('tr[data-uid]');
+      if (!row) return;
+      const uid = row.dataset.uid;
+
+      if (btn.dataset.action === 'delete') {
+        if (!confirm(`Удалить пользователя ${uid}?`)) return;
+        try {
+          await requestJSON(`/admin/${encodeURIComponent(uid)}`, { method: 'DELETE' });
+          row.remove();
+        } catch (err) {
+          alert('Не удалось удалить пользователя. Проверь логи сервера.');
+        }
+      }
+
+      if (btn.dataset.action === 'toggle-lock') {
+        const wasLocked = btn.dataset.locked === 'true';
+        const nextLocked = !wasLocked;
+        try {
+          await requestJSON(`/admin/${encodeURIComponent(uid)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ nsaccountlock: nextLocked })
+          });
+          updateLockButton(btn, nextLocked);
+        } catch (err) {
+          alert('Операция не выполнена. Сервер вернул ошибку.');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
